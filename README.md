@@ -2,7 +2,7 @@
 
 Repository of add-ons created for my house.
 
-![GitHub last commit (branch)](https://img.shields.io/github/last-commit/agustinamu/hassio-addons/master?label=Update)
+![GitHub last commit (branch)](https://img.shields.io/github/last-commit/agustinamu/hassio-addons/main?label=Update)
 
 # Installation
 
