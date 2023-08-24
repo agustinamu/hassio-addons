@@ -12,6 +12,14 @@ This add-on bridges events and allows you to control your Bluetooth devices via 
 
 This add-on uses the ble2mqtt software from the repository https://github.com/devbis/ble2mqtt.
 
+
+## Limitations
+This add-on has only been tested with one Bluetooth device, Vson WP6003. It may not work with other devices or have some issues. Please report any problems or suggestions in the issue tracker.
+
+
+## Credits
+This add-on is based on the [ble2mqtt](https://github.com/devbis/ble2mqtt) software developed by [devbis](https://github.com/devbis). All credit goes to him for creating this amazing project.
+
 [aarch64-shield]: https://img.shields.io/badge/aarch64-yes-green.svg
 [amd64-shield]: https://img.shields.io/badge/amd64-yes-green.svg
 [armhf-shield]: https://img.shields.io/badge/armhf-yes-green.svg
