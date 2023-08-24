@@ -14,7 +14,7 @@ If you want to do add the repository manually, please follow the procedure highl
 
 This repository contains the following add-ons
 
-&#10003;  [Ble2mqtt-addon](ble2mqtt-addon/) : Control your Bluetooth devices with smart home. Addon of repo https://github.com/devbis/ble2mqtt
+&#10003;  [addon-ble2mqtt](addon-ble2mqtt/) : Control your Bluetooth devices with smart home. Addon of repo https://github.com/devbis/ble2mqtt
 
 ![Supports aarch64 Architecture][aarch64-shield]
 ![Supports amd64 Architecture][amd64-shield]
