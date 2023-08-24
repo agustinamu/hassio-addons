@@ -17,7 +17,6 @@
     "mqtt:need"
   ],
   "host_dbus": true,
-  "startup": "application",
   "options": {
     "mqtt": {},
     "log_level": "INFO",
