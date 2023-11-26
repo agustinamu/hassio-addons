@@ -4,6 +4,8 @@
 1. In the configuration section, configure at least one device. You can paste the list in json format, when saving it is adapted to yaml. Example yaml:
 ```yaml
 - address: 11:22:33:aa:cc:aa
+  type: wp6003
+- address: 11:22:33:aa:cc:aa
   type: presence
 - address: 11:22:33:aa:bb:cc
   type: redmond_rk_g200

@@ -1,6 +1,6 @@
 {
   "name": "addon-ble2mqtt",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "slug": "addon-ble2mqtt",
   "url": "https://github.com/hassio-addons/addon-base-python",
   "description": "Addon ble2mqtt",
