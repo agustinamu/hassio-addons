@@ -21,8 +21,6 @@ privileged:
   - NET_ADMIN
 services:
   - mqtt:need
-map:
-  - config:rw
 options:
   log_level: INFO
   base_topic: ble2mqtt

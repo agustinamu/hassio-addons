@@ -52,7 +52,7 @@ jq -n \
     }' > "${CONFIG_FILE}"
 
 bashio::log.info "Generated config:"
-jq '.' "${CONFIG_FILE}"
+jq '.mqtt_password = "********"' "${CONFIG_FILE}"
 
 # --- Start bluetooth ---
 # If host D-Bus is available (host_dbus: true in config.yaml), use the host's

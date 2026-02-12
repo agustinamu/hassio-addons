@@ -16,7 +16,7 @@ services:
     image: eclipse-mosquitto:2
     network_mode: host
     command: >
-      sh -c 'printf "listener 1883\nallow_anonymous true\n" > /tmp/mosquitto.conf &&
+      sh -c 'printf "listener 1883 127.0.0.1\nallow_anonymous true\n" > /tmp/mosquitto.conf &&
       mosquitto -c /tmp/mosquitto.conf -v'
 
   ble2mqtt:

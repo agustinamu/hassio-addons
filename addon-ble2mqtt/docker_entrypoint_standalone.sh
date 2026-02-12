@@ -21,7 +21,7 @@ else
 fi
 
 echo "[INFO]  Config:"
-jq '.' "${CONFIG_FILE}"
+jq '.mqtt_password = "********"' "${CONFIG_FILE}"
 
 # If host D-Bus is mounted, use host's bluetoothd (no conflict with host BT).
 # Otherwise, start our own (requires: sudo systemctl stop bluetooth on host).
