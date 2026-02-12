@@ -14,7 +14,7 @@ RUN apk add --no-cache \
         jq \
     && pip3 install --no-cache-dir --break-system-packages \
         --root-user-action=ignore \
-        "ble2mqtt[full]"
+        "ble2mqtt[full]==0.2.5"
 
 # Wrapper: ble2mqtt calls 'hciconfig' which is deprecated and removed from
 # modern bluez. This shim translates hciconfig up/down to bluetoothctl.
