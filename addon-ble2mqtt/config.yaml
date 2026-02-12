@@ -1,0 +1,47 @@
+---
+name: BLE2MQTT
+version: "0.1.0"
+slug: ble2mqtt
+description: >-
+  Bridge Bluetooth Low Energy (BLE) devices to Home Assistant via MQTT.
+  Based on https://github.com/devbis/ble2mqtt
+url: https://github.com/agustinamu/hassio-addons
+startup: services
+boot: auto
+init: false
+arch:
+  - aarch64
+  - amd64
+  - armhf
+  - armv7
+  - i386
+host_network: true
+host_dbus: true
+privileged:
+  - NET_ADMIN
+services:
+  - mqtt:need
+map:
+  - config:rw
+options:
+  log_level: INFO
+  base_topic: ble2mqtt
+  mqtt_prefix: "b2m_"
+  hci_adapter: hci0
+  legacy_color_mode: false
+  devices: []
+schema:
+  log_level: list(DEBUG|INFO|WARNING|ERROR|CRITICAL)
+  base_topic: str
+  mqtt_prefix: str
+  hci_adapter: str
+  legacy_color_mode: bool
+  devices:
+    - address: str
+      type: list(presence|wp6003|redmond_rk_g200|redmond_rmc_m200|mikettle|xiaomihtv1|xiaomilywsd|xiaomilywsd_atc|am43|soma_shades|ensto_thermostat|atomfast|voltage_bm2|mclh09|miflora)
+      friendly_name: str?
+      key: str?
+      product_id: int?
+      interval: int?
+      passive: bool?
+      threshold: int?

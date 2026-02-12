@@ -1,0 +1,40 @@
+# ==============================================================================
+# Test ble2mqtt addon locally WITHOUT Home Assistant
+#
+# Usage:
+#   1. Copy ble2mqtt.json.example to ble2mqtt.json (ya apunta a localhost:1883)
+#   2. docker compose -f docker-compose.test.yml up --build
+#
+# Requirements:
+#   - Bluetooth adapter on the host
+#   - By default mounts host D-Bus, so host bluetooth stays running.
+#     To use isolated bluetooth instead, remove the dbus volume and
+#     stop host bluetooth: sudo systemctl stop bluetooth
+# ==============================================================================
+services:
+  mosquitto:
+    image: eclipse-mosquitto:2
+    network_mode: host
+    command: >
+      sh -c 'printf "listener 1883\nallow_anonymous true\n" > /tmp/mosquitto.conf &&
+      mosquitto -c /tmp/mosquitto.conf -v'
+
+  ble2mqtt:
+    build:
+      context: .
+      args:
+        BUILD_FROM: python:3.13-alpine3.21
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
+    security_opt:
+      - apparmor:unconfined
+    volumes:
+      - ./ble2mqtt.json:/etc/ble2mqtt.json:ro
+      - /var/run/dbus:/var/run/dbus:ro
+    environment:
+      - TZ=Europe/Madrid
+    command: ["/usr/src/app/docker_entrypoint_standalone.sh"]
+    restart: unless-stopped
+    depends_on:
+      - mosquitto

@@ -1,34 +1,30 @@
-ARG BUILD_FROM
-FROM $BUILD_FROM
+ARG BUILD_FROM=python:3.13-alpine3.21
+FROM ${BUILD_FROM}
 
-ENV LANG C.UTF-8
+ENV LANG=C.UTF-8
+
+# Install bash (not present in python:alpine, already in HA base images)
+RUN apk add --no-cache bash
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-# Install requirements for add-on
-RUN \
-    apk add --no-cache bluez bluez-deprecated openrc\
-    && apk add --no-cache \
-         python3 \
-             py3-pip \
-             bluez\
-     \
-     && pip3 install bleak>=0.12.0 \
-     && pip3 install aio-mqtt-mod>=0.2.0 \
-     && pip3 install -U ble2mqtt
+# Install bluetooth stack and ble2mqtt
+RUN apk add --no-cache \
+        bluez \
+        jq \
+    && pip3 install --no-cache-dir --break-system-packages \
+        --root-user-action=ignore \
+        "ble2mqtt[full]"
 
-
-# Copy data for add-on
-
+# Wrapper: ble2mqtt calls 'hciconfig' which is deprecated and removed from
+# modern bluez. This shim translates hciconfig up/down to bluetoothctl.
+COPY rootfs /
 
 WORKDIR /usr/src/app
 
-# To speed up consecutive builds, copy only requirements and install them
-COPY ./ble2mqtt .
-
-COPY ./docker_entrypoint.sh docker_entrypoint.sh
-RUN chmod +x docker_entrypoint.sh
+COPY docker_entrypoint.sh docker_entrypoint_standalone.sh /usr/src/app/
+RUN chmod +x /usr/src/app/docker_entrypoint.sh /usr/src/app/docker_entrypoint_standalone.sh
 
 ENV BLE2MQTT_CONFIG=/usr/src/app/ble2mqtt.json
 
-CMD [ "./docker_entrypoint.sh" ]
+CMD [ "/usr/src/app/docker_entrypoint.sh" ]

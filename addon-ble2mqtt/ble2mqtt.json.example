@@ -1,0 +1,17 @@
+{
+    "mqtt_host": "localhost",
+    "mqtt_port": 1883,
+    "mqtt_user": "",
+    "mqtt_password": "",
+    "log_level": "DEBUG",
+    "base_topic": "ble2mqtt",
+    "mqtt_prefix": "b2m_",
+    "hci_adapter": "hci0",
+    "legacy_color_mode": false,
+    "devices": [
+        {
+            "address": "AA:BB:CC:DD:EE:FF",
+            "type": "presence"
+        }
+    ]
+}

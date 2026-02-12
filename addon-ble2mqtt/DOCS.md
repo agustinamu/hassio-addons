@@ -1,49 +1,76 @@
-# Home Assistant Add-on: addon-ble2mqtt
-## How to use
+# Home Assistant Add-on: BLE2MQTT
 
-1. In the configuration section, configure at least one device. You can paste the list in json format, when saving it is adapted to yaml. Example yaml:
+## Configuration
+
+### MQTT
+
+MQTT connection is auto-discovered from Home Assistant. No configuration needed
+if you have the Mosquitto addon or any MQTT integration configured.
+
+### Options
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `log_level` | `INFO` | `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL` |
+| `base_topic` | `ble2mqtt` | MQTT topic prefix for all devices |
+| `mqtt_prefix` | `b2m_` | Prefix for device names in MQTT |
+| `hci_adapter` | `hci0` | Bluetooth adapter to use |
+| `legacy_color_mode` | `false` | Set `true` for HA versions before 2024.4 |
+| `devices` | `[]` | List of BLE devices (see below) |
+
+### Device configuration
+
+Each device requires at minimum `address` and `type`:
+
 ```yaml
-- address: 11:22:33:aa:cc:aa
-  type: wp6003
-- address: 11:22:33:aa:cc:aa
-  type: presence
-- address: 11:22:33:aa:bb:cc
-  type: redmond_rk_g200
-  key: ffffffffffffffff
-- address: 11:22:33:aa:bb:c0
-  type: redmond_rmc_m200
-  key: ffffffffffffffff
-- address: 11:22:33:aa:bb:c1
-  type: ensto_thermostat
-  key: "00112233"
-- address: 11:22:33:aa:bb:cd
-  type: mikettle
-  product_id: 275
-- address: 11:22:33:aa:bb:de
-  type: am43
-- address: 11:22:33:aa:bb:dd
-  type: xiaomihtv1
-- address: 11:22:34:aa:bb:dd
-  type: xiaomihtv1
-  passive: false
-- address: 11:22:33:aa:bb:ee
-  type: xiaomilywsd
-- address: 11:22:33:aa:bb:ff
-  type: xiaomilywsd_atc
-- address: 11:22:33:aa:aa:aa
-  type: atomfast
-- address: 11:22:33:aa:aa:bb
-  type: voltage_bm2
-- address: 11:22:33:aa:aa:bc
-  type: mclh09
-  interval: 600
-- address: 11:22:33:aa:aa:bd
-  type: miflora
-  interval: 500
+devices:
+  - address: "AA:BB:CC:DD:EE:FF"
+    type: presence
+  - address: "11:22:33:44:55:66"
+    type: xiaomilywsd
+  - address: "AA:BB:CC:DD:EE:00"
+    type: redmond_rk_g200
+    key: "ffffffffffffffff"
+  - address: "AA:BB:CC:DD:EE:01"
+    type: mikettle
+    product_id: 275
+  - address: "AA:BB:CC:DD:EE:02"
+    type: ensto_thermostat
+    key: "00112233"
+  - address: "AA:BB:CC:DD:EE:03"
+    type: miflora
+    interval: 600
+  - address: "AA:BB:CC:DD:EE:04"
+    type: xiaomihtv1
+    passive: false
 ```
 
-More info in ble2mqtt repo, [url](https://github.com/devbis/ble2mqtt)
+### Device fields
 
-2. Save the configuration.
-3. Start the add-on.
-4. Check the add-on log output to see the result.
+| Field | Required | Description |
+|-------|----------|-------------|
+| `address` | yes | BLE MAC address (`XX:XX:XX:XX:XX:XX`) |
+| `type` | yes | Device type identifier (see supported types) |
+| `friendly_name` | no | Human-readable name |
+| `key` | no | Encryption key (required for Redmond, Ensto) |
+| `product_id` | no | Product variant (required for Mi Kettle) |
+| `interval` | no | Polling interval in seconds |
+| `passive` | no | `true` for passive listening, `false` for active connection |
+| `threshold` | no | Presence detection timeout in seconds |
+
+### Supported device types
+
+`presence`, `wp6003`, `redmond_rk_g200`, `redmond_rmc_m200`, `mikettle`,
+`xiaomihtv1`, `xiaomilywsd`, `xiaomilywsd_atc`, `am43`, `soma_shades`,
+`ensto_thermostat`, `atomfast`, `voltage_bm2`, `mclh09`, `miflora`
+
+Full list: [ble2mqtt docs](https://github.com/devbis/ble2mqtt#supported-devices)
+
+## Important notes
+
+- **Bluetooth conflict**: The host bluetooth service (`bluez`) should be stopped,
+  as this addon runs its own bluetooth daemon inside the container.
+  On HAOS this is handled automatically.
+- **Network mode**: This addon uses host networking for bluetooth access.
+- **Encrypted devices**: For Redmond and Ensto devices, you need to obtain the
+  encryption key. See the [ble2mqtt documentation](https://github.com/devbis/ble2mqtt).

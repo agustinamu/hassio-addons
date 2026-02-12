@@ -1,0 +1,31 @@
+#!/bin/sh
+# ==============================================================================
+# hciconfig shim - translates deprecated hciconfig commands to bluetoothctl
+#
+# ble2mqtt calls 'hciconfig <adapter> down/up' to restart bluetooth on errors.
+# hciconfig was removed from modern bluez. This shim provides compatibility.
+# ==============================================================================
+
+ADAPTER="${1:-hci0}"
+ACTION="${2}"
+
+case "${ACTION}" in
+    down)
+        bluetoothctl power off 2>/dev/null || true
+        ;;
+    up)
+        bluetoothctl power on 2>/dev/null || true
+        ;;
+    reset)
+        bluetoothctl power off 2>/dev/null || true
+        sleep 1
+        bluetoothctl power on 2>/dev/null || true
+        ;;
+    *)
+        # For status queries or unknown commands, return success silently
+        echo "${ADAPTER}: Type: Primary  Bus: USB"
+        echo "        UP RUNNING"
+        ;;
+esac
+
+exit 0

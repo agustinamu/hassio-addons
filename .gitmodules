@@ -1,3 +1,0 @@
-[submodule "addon-ble2mqtt/ble2mqtt"]
-	path = addon-ble2mqtt/ble2mqtt
-	url = https://github.com/devbis/ble2mqtt.git
