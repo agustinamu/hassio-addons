@@ -66,5 +66,9 @@ else
     sleep 2
 fi
 
+# --- List available adapters for diagnostics ---
+bashio::log.info "Bluetooth adapters:"
+bluetoothctl list 2>/dev/null | awk '{printf "  hci%d: %s\n", NR-1, $0}' || echo "  (none found)"
+
 bashio::log.info "Starting ble2mqtt..."
 exec ble2mqtt

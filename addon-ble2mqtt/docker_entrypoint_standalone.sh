@@ -33,5 +33,9 @@ else
     sleep 2
 fi
 
+# List available adapters for diagnostics
+echo "[INFO]  Bluetooth adapters:"
+bluetoothctl list 2>/dev/null | awk '{printf "  hci%d: %s\n", NR-1, $0}' || echo "  (none found)"
+
 echo "[INFO]  Starting ble2mqtt..."
 exec ble2mqtt
