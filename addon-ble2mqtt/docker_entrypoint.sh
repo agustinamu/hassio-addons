@@ -27,6 +27,8 @@ LEGACY_COLOR=$(bashio::config 'legacy_color_mode' false)
 DEVICES_JSON=$(bashio::config 'devices')
 # Ensure valid JSON for --argjson parameters
 [[ -z "${DEVICES_JSON}" || "${DEVICES_JSON}" == "null" ]] && DEVICES_JSON="[]"
+# Ensure devices is always an array (bashio may return a single object)
+DEVICES_JSON=$(echo "${DEVICES_JSON}" | jq 'if type == "array" then . else [.] end')
 [[ -z "${MQTT_PORT}" ]] && MQTT_PORT=1883
 [[ "${LEGACY_COLOR}" != "true" ]] && LEGACY_COLOR="false"
 

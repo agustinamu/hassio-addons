@@ -1,6 +1,6 @@
 ---
 name: BLE2MQTT
-version: "0.1.5"
+version: "0.1.6"
 slug: ble2mqtt
 description: >-
   Bridge Bluetooth Low Energy (BLE) devices to Home Assistant via MQTT.
