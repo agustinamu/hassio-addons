@@ -81,13 +81,17 @@ import asyncio
 from bleak import BleakScanner
 
 async def scan():
-    devices = await BleakScanner.discover(timeout=10, adapter='${HCI_ADAPTER}')
-    if not devices:
+    scanner = BleakScanner(adapter='${HCI_ADAPTER}')
+    await scanner.start()
+    await asyncio.sleep(10)
+    await scanner.stop()
+    results = scanner.discovered_devices_and_advertisement_data
+    if not results:
         print('  (no devices found)')
         return
-    for d in sorted(devices, key=lambda x: x.rssi or -999, reverse=True):
-        name = d.name or 'Unknown'
-        print(f'  {d.address}  {d.rssi:>4} dBm  {name}')
+    for d, adv in sorted(results.values(), key=lambda x: x[1].rssi or -999, reverse=True):
+        name = d.name or adv.local_name or 'Unknown'
+        print(f'  {d.address}  {adv.rssi:>4} dBm  {name}')
 
 asyncio.run(scan())
 " || bashio::log.warning "BLE scan failed (non-fatal)"
