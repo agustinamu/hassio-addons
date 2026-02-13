@@ -1,0 +1,4 @@
+#!/bin/sh
+# No-op stub: ble2mqtt calls /etc/init.d/bluetooth restart on errors.
+# In the addon container, bluetoothd runs on the host via D-Bus.
+exit 0
