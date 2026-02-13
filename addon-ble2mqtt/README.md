@@ -10,7 +10,6 @@ Bridge Bluetooth Low Energy (BLE) devices to Home Assistant via MQTT.
 
 ![Supports aarch64 Architecture][aarch64-shield]
 ![Supports amd64 Architecture][amd64-shield]
-![Supports armv7 Architecture][armv7-shield]
 
 ## About
 
@@ -44,4 +43,3 @@ Based on [ble2mqtt](https://github.com/devbis/ble2mqtt) by [devbis](https://gith
 
 [aarch64-shield]: https://img.shields.io/badge/aarch64-yes-green.svg
 [amd64-shield]: https://img.shields.io/badge/amd64-yes-green.svg
-[armv7-shield]: https://img.shields.io/badge/armv7-yes-green.svg
