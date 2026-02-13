@@ -74,5 +74,23 @@ fi
 bashio::log.info "Bluetooth adapters:"
 bluetoothctl list 2>/dev/null | awk '{printf "  hci%d: %s\n", NR-1, $0}' || echo "  (none found)"
 
+# --- BLE device scan (helps discover MAC addresses for configuration) ---
+bashio::log.info "Scanning for nearby BLE devices (10s)..."
+python3 -c "
+import asyncio
+from bleak import BleakScanner
+
+async def scan():
+    devices = await BleakScanner.discover(timeout=10, adapter='${HCI_ADAPTER}')
+    if not devices:
+        print('  (no devices found)')
+        return
+    for d in sorted(devices, key=lambda x: x.rssi or -999, reverse=True):
+        name = d.name or 'Unknown'
+        print(f'  {d.address}  {d.rssi:>4} dBm  {name}')
+
+asyncio.run(scan())
+" 2>/dev/null || bashio::log.warning "BLE scan failed (non-fatal)"
+
 bashio::log.info "Starting ble2mqtt..."
 exec ble2mqtt
