@@ -22,10 +22,22 @@ jobs:
     steps:
       - name: Check out the repository
         uses: actions/checkout@v4.1.6
+        with:
+          fetch-depth: 0
 
       - name: Get changed files
         id: changed_files
-        uses: jitterbit/get-changed-files@v1
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            changed=$(git diff --name-only "origin/$BASE_REF"...HEAD | tr '\n' ' ')
+          else
+            changed=$(git diff --name-only "$BEFORE_SHA" "$AFTER_SHA" | tr '\n' ' ')
+          fi
+          echo "all=$changed" >> $GITHUB_OUTPUT
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          BEFORE_SHA: ${{ github.event.before }}
+          AFTER_SHA: ${{ github.sha }}
 
       - name: Find add-on directories
         id: addons
