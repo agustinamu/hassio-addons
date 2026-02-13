@@ -90,7 +90,7 @@ async def scan():
         print(f'  {d.address}  {d.rssi:>4} dBm  {name}')
 
 asyncio.run(scan())
-" 2>/dev/null || bashio::log.warning "BLE scan failed (non-fatal)"
+" || bashio::log.warning "BLE scan failed (non-fatal)"
 
 bashio::log.info "Starting ble2mqtt..."
 exec ble2mqtt
