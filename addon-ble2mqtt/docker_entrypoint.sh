@@ -25,11 +25,15 @@ LEGACY_COLOR=$(bashio::config 'legacy_color_mode' false)
 
 # --- Devices ---
 DEVICES_JSON=$(bashio::config 'devices')
+# Ensure valid JSON for --argjson parameters
+[[ -z "${DEVICES_JSON}" || "${DEVICES_JSON}" == "null" ]] && DEVICES_JSON="[]"
+[[ -z "${MQTT_PORT}" ]] && MQTT_PORT=1883
+[[ "${LEGACY_COLOR}" != "true" ]] && LEGACY_COLOR="false"
 
 # --- Build config file with jq ---
 jq -n \
     --arg host "${MQTT_HOST}" \
-    --argjson port "${MQTT_PORT:-1883}" \
+    --argjson port "${MQTT_PORT}" \
     --arg user "${MQTT_USER}" \
     --arg pass "${MQTT_PASS}" \
     --arg log "${LOG_LEVEL}" \
