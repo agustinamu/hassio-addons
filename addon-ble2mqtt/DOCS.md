@@ -66,11 +66,46 @@ devices:
 
 Full list: [ble2mqtt docs](https://github.com/devbis/ble2mqtt#supported-devices)
 
+## Finding your device addresses
+
+On startup, the addon scans for nearby BLE devices for 10 seconds and logs them
+sorted by signal strength:
+
+```
+Scanning for nearby BLE devices (10s)...
+  60:03:03:94:11:DF   -37 dBm  6003#06003039411DF
+  1C:AF:4A:05:D3:D9   -71 dBm  Samsung S93CA 55
+  C4:82:E1:8F:F1:4C   -93 dBm  TY
+```
+
+Use the MAC address from this list to add devices to your configuration.
+Check the addon **Log** tab after each restart to see available devices.
+
+## Vson WP6003 air quality sensor
+
+The WP6003 reports temperature, CO2, TVOC (mg/m3) and HCHO (mg/m3).
+
+```yaml
+devices:
+  - address: "60:03:03:94:11:DF"
+    type: wp6003
+    friendly_name: "Air Quality"
+```
+
+**Tips:**
+- The sensor may report saturated values (tvoc: 9.999, hcho: 1.999, co2: 2000)
+  during the first minutes after power-on. Wait a few minutes for readings to
+  stabilize.
+- WP6003 devices show up in the BLE scan with names starting with `6003#`.
+
+> **Alternative**: For the WP6003 specifically, consider the native integration
+> [hass-vson](https://github.com/eigger/hass-vson) which provides auto-discovery
+> via BLE without needing an MQTT broker. Install it via HACS.
+
 ## Important notes
 
-- **Bluetooth conflict**: The host bluetooth service (`bluez`) should be stopped,
-  as this addon runs its own bluetooth daemon inside the container.
-  On HAOS this is handled automatically.
+- **Bluetooth**: On HAOS, the addon uses the host bluetooth via D-Bus.
+  No additional configuration is needed.
 - **Network mode**: This addon uses host networking for bluetooth access.
 - **Encrypted devices**: For Redmond and Ensto devices, you need to obtain the
   encryption key. See the [ble2mqtt documentation](https://github.com/devbis/ble2mqtt).
