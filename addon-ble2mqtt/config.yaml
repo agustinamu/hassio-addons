@@ -6,6 +6,7 @@ description: >-
   Bridge Bluetooth Low Energy (BLE) devices to Home Assistant via MQTT.
   Based on https://github.com/devbis/ble2mqtt
 url: https://github.com/agustinamu/hassio-addons
+image: "ghcr.io/agustinamu/{arch}-addon-ble2mqtt"
 startup: services
 init: false
 arch:
