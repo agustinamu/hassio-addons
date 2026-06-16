@@ -1,0 +1,8 @@
+[project]
+name = "calibrate-wp6003"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.11"
+dependencies = [
+    "bleak>=2.1.1",
+]
