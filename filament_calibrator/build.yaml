@@ -1,0 +1,8 @@
+# Imagen base por arquitectura. python:3.12-slim-bookworm es un manifiesto multi-arch:
+# el builder de HA resuelve la capa correcta según la arquitectura objetivo.
+build_from:
+  aarch64: python:3.12-slim-bookworm
+  amd64: python:3.12-slim-bookworm
+  armv7: python:3.12-slim-bookworm
+labels:
+  io.hass.type: addon

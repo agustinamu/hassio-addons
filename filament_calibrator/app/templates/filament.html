@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% block title %}{{ record.vendor }} {{ record.name }} · Calibrator{% endblock %}
+{% block content %}
+
+<section class="card">
+  <div class="fil-head">
+    <h1>
+      {% if record.color_hex %}<span class="dot big" style="background:#{{ record.color_hex }}"></span>{% endif %}
+      {{ record.vendor }} · {{ record.name }}
+    </h1>
+    <span class="badge">{{ material.name }}</span>
+    {% if record.calibrated %}<span class="badge ok">Calibrado {{ record.calib_date }}</span>{% endif %}
+  </div>
+
+  <table class="results">
+    <tr><td>Temp. nozzle</td><td>{{ results.nozzle_temp|fmt }} °C</td>
+        <td>Flow ratio</td><td>{{ results.flow_ratio|fmt(3) }}</td></tr>
+    <tr><td>Temp. cama</td><td>{{ results.bed_temp|fmt }} °C</td>
+        <td>Factor K (PA)</td><td>{{ results.pressure_advance|fmt(3) }}</td></tr>
+    <tr><td>Retracción</td><td>{{ results.retraction_distance|fmt(1) }} mm @ {{ results.retraction_speed|fmt }} mm/s</td>
+        <td>MVS</td><td>
+          {%- if results.mvs is not none %}{{ results.mvs|fmt(1) }} mm³/s
+          <span class="muted">(seguro {{ mvs_safe|fmt(1) }})</span>{% else %}—{% endif %}</td></tr>
+  </table>
+</section>
+
+<section class="card intro">
+  <h2>Antes de empezar (en OrcaSlicer)</h2>
+  <ol>
+    <li>Parte del perfil base: <strong>{{ material.defaults.base_profile }}</strong>.</li>
+    <li>Duplícalo (icono guardar → <em>Save as</em>), nómbralo p.ej.
+        <code>{{ record.vendor }} {{ record.name }} ({{ material.name }})</code>
+        y apúntalo abajo en «Perfil en OrcaSlicer».</li>
+    <li>Trabaja siempre sobre esa copia. <strong>Cada paso es secuencial</strong>:
+        tras obtener un valor, mételo donde se indica y <strong>guarda el perfil
+        antes de imprimir el siguiente test</strong> (así el test siguiente ya usa
+        el valor anterior).</li>
+  </ol>
+  {% if not record.orca_profile %}
+  <p class="warn">⚠ Aún no has anotado el perfil de Orca. Hazlo en «Datos del filamento» (abajo).</p>
+  {% endif %}
+</section>
+
+<section class="card">
+  <h2>Pasos de calibración</h2>
+  <p class="muted">Orden recomendado: temperatura → flow → factor K → retracción → MVS.</p>
+
+  {% for item in steps %}
+  {% set step = item.step %}
+  <details class="step" {% if step.id == next_id %}open{% endif %}>
+    <summary>
+      <span class="step-state {{ 'done' if item.done else 'todo' }}">{{ '✓' if item.done else '○' }}</span>
+      {{ step.title }}
+      {% if step.optional %}<span class="badge opt">opcional</span>{% endif %}
+      {% if item.done %}<span class="step-val">{{ item.value|fmt(3) }}</span>{% endif %}
+      {% if step.id == next_id %}<span class="badge next">siguiente</span>{% endif %}
+    </summary>
+
+    <div class="step-body">
+      <p class="orca">1. Lanza el test: <code>{{ step.orca_path }}</code></p>
+      <p>{{ step.guidance }}</p>
+      {% for w in step.warnings %}
+      <p class="warn">⚠ {{ w }}</p>
+      {% endfor %}
+      <p class="apply">2. Introduce el valor abajo (lo calculo) y aplícalo en Orca:
+        <code>{{ step.orca_apply }}</code>. Guarda el perfil antes del siguiente paso.</p>
+
+      <form method="post" action="{{ request.scope.root_path }}/filaments/{{ record.slug }}/steps/{{ step.id }}" class="step-form">
+        {% if step.ask_current %}
+        <label>Flow ratio actual del perfil
+          <input type="number" step="any" name="current" required
+                 value="{{ results[step.output] if results[step.output] is not none else '' }}">
+        </label>
+        {% endif %}
+        <label>{{ step.input.label }}{% if step.input.unit %} ({{ step.input.unit }}){% endif %}
+          <input type="number" step="any" name="value" required
+                 {% if item.done and item.value is not none %}placeholder="actual: {{ item.value|fmt(3) }}"{% endif %}>
+        </label>
+        <button class="primary" type="submit">{{ 'Recalcular' if item.done else 'Guardar' }}</button>
+      </form>
+    </div>
+  </details>
+  {% endfor %}
+</section>
+
+<section class="card">
+  <h2>Datos del filamento</h2>
+  <form method="post" action="{{ request.scope.root_path }}/filaments/{{ record.slug }}/meta" class="grid">
+    <label>Marca / fabricante
+      <input name="vendor" value="{{ record.vendor }}">
+    </label>
+    <label>Nombre / color
+      <input name="name" value="{{ record.name }}">
+    </label>
+    <label>Temp. cama (°C)
+      <input type="number" step="any" name="bed_temp" value="{{ results.bed_temp|fmt(0, '') }}">
+    </label>
+    <label>Vel. retracción (mm/s)
+      <input type="number" step="any" name="retraction_speed" value="{{ results.retraction_speed|fmt(0, '') }}">
+    </label>
+    <label>Temp. de carga (°C)
+      <input type="number" step="any" name="load_temp" value="{{ record.load_temp|fmt(0, '') }}">
+    </label>
+    <label>Perfil en OrcaSlicer
+      <input name="orca_profile" value="{{ record.orca_profile or '' }}" placeholder="nombre del perfil guardado">
+    </label>
+    <label>Color (hex)
+      <input name="color_hex" value="{{ record.color_hex or '' }}">
+    </label>
+    <button type="submit">Guardar datos</button>
+  </form>
+</section>
+
+<section class="card">
+  <h2>Llevar a otro OrcaSlicer</h2>
+  <p class="muted">Para reproducir este filamento en otro PC: duplica el perfil base y
+    aplica estos valores. El factor K (PA) no va en el perfil de Orca: vive en la
+    impresora (pestaña <em>history</em> de la P1S).</p>
+  <ol class="resumen">
+    <li>Perfil base a duplicar: <strong>{{ material.defaults.base_profile }}</strong></li>
+    <li>Temp. nozzle: <strong>{{ results.nozzle_temp|fmt }} °C</strong></li>
+    <li>Temp. cama: <strong>{{ results.bed_temp|fmt }} °C</strong></li>
+    <li>Flow ratio: <strong>{{ results.flow_ratio|fmt(3) }}</strong></li>
+    <li>Retracción: <strong>{{ results.retraction_distance|fmt(1) }} mm @ {{ results.retraction_speed|fmt }} mm/s</strong></li>
+    {% if results.mvs is not none %}
+    <li>MVS: <strong>{{ results.mvs|fmt(1) }} mm³/s</strong> <span class="muted">(seguro {{ mvs_safe|fmt(1) }})</span></li>
+    {% endif %}
+    <li>Factor K (PA) en la impresora: <strong>{{ results.pressure_advance|fmt(3) }}</strong></li>
+  </ol>
+</section>
+
+<section class="card actions">
+  <a href="{{ request.scope.root_path }}/" class="link">← Volver</a>
+  <div class="action-buttons">
+    {% if spoolman_enabled %}
+    <form method="post" action="{{ request.scope.root_path }}/filaments/{{ record.slug }}/sync">
+      <button type="submit">Enviar a Spoolman</button>
+    </form>
+    {% endif %}
+    <form method="post" action="{{ request.scope.root_path }}/filaments/{{ record.slug }}/finalize">
+      <button class="primary" type="submit">Marcar como calibrado</button>
+    </form>
+  </div>
+</section>
+
+{% endblock %}

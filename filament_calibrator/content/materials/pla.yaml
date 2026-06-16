@@ -1,0 +1,86 @@
+code: pla
+name: PLA
+defaults:
+  density: 1.24
+  diameter: 1.75
+  nozzle_range: [190, 230]
+  bed_range: [20, 60]
+  base_profile: "Generic PLA (o el de tu marca, si existe)"
+  bed_temp: 55
+  retraction_speed: 40
+
+steps:
+  - id: temperature
+    title: Torre de temperatura
+    orca_path: "Calibration → Temperature"
+    orca_apply: "Filament → Temperature → Nozzle temperature"
+    params: { start: 190, end: 230, step: 5 }
+    guidance: >
+      Lanza la torre de temperatura en OrcaSlicer e imprímela. Inspecciona los
+      bloques de arriba a abajo y elige el de mejor calidad global (menos
+      stringing y oozing, buen puenteo, buena adhesión entre capas). Si varios
+      bloques se ven igual de bien, elige la temperatura intermedia.
+    input: { kind: choice_value, label: "Temperatura del mejor bloque", unit: "°C" }
+    compute: identity
+    output: nozzle_temp
+    warnings: []
+
+  - id: flow
+    title: "Flow ratio (YOLO recomendado)"
+    ask_current: true
+    orca_path: "Calibration → Flow rate → YOLO (recomendado)"
+    orca_apply: "Filament → Advanced → Flow ratio"
+    params: { base: 1.0 }
+    guidance: >
+      Imprime el test YOLO recomendado (11 bloques, una sola pasada). Pasa la uña
+      por la superficie de cada bloque: el más liso es el de mejor flujo. Indica
+      abajo el flow ratio actual del perfil (lo ves en Orca → Factor de flujo) y
+      el modificador (delta) grabado en el mejor bloque; el delta se SUMA al flow
+      actual (ej. 0.95 + (-0.01) = 0.94).
+    input: { kind: modifier, label: "Modificador (delta) del mejor bloque", unit: "" }
+    compute: flow_yolo
+    output: flow_ratio
+    warnings: []
+
+  - id: pressure_advance
+    title: "Pressure Advance (factor K) — método Tower"
+    orca_path: "Calibration → Pressure Advance → Torre PA (DDE)"
+    orca_apply: "Filament → activar 'Pressure advance' y poner el valor (vive en el perfil; imprimes desde Orca)"
+    params: { start: 0.0, step: 0.002 }
+    guidance: >
+      La P1S no tiene lidar: el factor K se calibra a mano. Usa Torre PA, extrusor
+      DDE (la torre no admite números: es un gradiente continuo). Busca la zona con
+      las esquinas más limpias: sin bulto tras la esquina (PA bajo) ni hueco antes
+      (PA alto). Mide con calibre su altura en mm desde la base del patrón; la app
+      calcula K = 0.002 × altura.
+    input: { kind: height_mm, label: "Altura de la mejor zona", unit: "mm" }
+    compute: pa_tower
+    output: pressure_advance
+    warnings: []
+
+  - id: retraction
+    title: Test de retracción
+    orca_path: "Calibration → Retraction"
+    orca_apply: "Printer → Extruder → Retraction → Length (o como override por filamento)"
+    params: {}
+    guidance: >
+      Imprime la torre de retracción. Elige la distancia más corta que deje la
+      torre limpia (sin hilos). Introduce esa distancia en mm.
+    input: { kind: value, label: "Distancia de retracción óptima", unit: "mm" }
+    compute: identity
+    output: retraction_distance
+    warnings: []
+
+  - id: mvs
+    title: Máxima velocidad volumétrica (MVS)
+    orca_path: "Calibration → Max flowrate"
+    orca_apply: "Filament → Advanced → Max volumetric speed (usa el valor 'seguro' con margen)"
+    params: { start: 5, end: 24, step: 0.5 }
+    guidance: >
+      Imprime el test de caudal máximo. Mide la altura (mm) a la que empieza a
+      degradarse la calidad (sub-extrusión, huecos). Se aplicará un margen de
+      seguridad del 15% sobre el resultado.
+    input: { kind: height_mm, label: "Altura donde degrada la calidad", unit: "mm" }
+    compute: mvs
+    output: mvs
+    warnings: []

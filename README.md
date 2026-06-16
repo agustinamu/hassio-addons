@@ -19,6 +19,11 @@ This repository contains the following add-ons
 ![Supports aarch64 Architecture][aarch64-shield]
 ![Supports amd64 Architecture][amd64-shield]
 
+&#10003;  [filament_calibrator](filament_calibrator/) : Guided filament calibration for OrcaSlicer (Bambu Lab P1S) with Spoolman export. Served via ingress.
+
+![Supports aarch64 Architecture][aarch64-shield]
+![Supports amd64 Architecture][amd64-shield]
+
 
 <!--
 

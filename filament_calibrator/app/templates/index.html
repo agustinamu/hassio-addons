@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block content %}
+
+<section class="card">
+  <h1>Filamentos</h1>
+  {% if records %}
+  <table class="list">
+    <thead>
+      <tr><th>Filamento</th><th>Material</th><th>Estado</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for r in records %}
+      <tr>
+        <td>
+          <a href="{{ request.scope.root_path }}/filaments/{{ r.slug }}">
+            {% if r.color_hex %}<span class="dot" style="background:#{{ r.color_hex }}"></span>{% endif %}
+            <strong>{{ r.vendor }}</strong> · {{ r.name }}
+          </a>
+        </td>
+        <td>{{ materials[r.material].name if r.material in materials else r.material }}</td>
+        <td>
+          {% if r.calibrated %}
+            <span class="badge ok">Calibrado {{ r.calib_date }}</span>
+          {% else %}
+            <span class="badge wip">{{ r.steps_progress.values()|select|list|length }} pasos hechos</span>
+          {% endif %}
+        </td>
+        <td class="right">
+          <form method="post" action="{{ request.scope.root_path }}/filaments/{{ r.slug }}/delete"
+                onsubmit="return confirm('¿Borrar {{ r.vendor }} {{ r.name }}?')">
+            <button class="link danger" type="submit">borrar</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="muted">Aún no hay filamentos. Crea el primero abajo.</p>
+  {% endif %}
+</section>
+
+<section class="card">
+  <h2>Nuevo filamento</h2>
+  <form method="post" action="{{ request.scope.root_path }}/filaments" class="grid">
+    <label>Marca / fabricante
+      <input name="vendor" required placeholder="p.ej. Bambu, eSun">
+    </label>
+    <label>Nombre / color
+      <input name="name" required placeholder="p.ej. Negro mate">
+    </label>
+    <label>Material
+      <select name="material" required>
+        {% for code, m in materials.items() %}
+        <option value="{{ code }}">{{ m.name }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Color (hex, opcional)
+      <input name="color_hex" placeholder="p.ej. 24292A">
+    </label>
+    <button class="primary" type="submit">Crear y calibrar</button>
+  </form>
+</section>
+
+{% endblock %}

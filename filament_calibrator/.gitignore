@@ -1,0 +1,7 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+# Datos de filamentos (estado local, no versionar salvo ejemplos)
+data/filaments/*.json
+!data/filaments/example.json

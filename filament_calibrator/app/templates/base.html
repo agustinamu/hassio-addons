@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Filament Calibrator{% endblock %}</title>
+  <link rel="stylesheet" href="{{ request.scope.root_path }}/static/style.css">
+  <script src="{{ request.scope.root_path }}/static/htmx.min.js" defer></script>
+</head>
+<body hx-boost="true">
+  <header class="topbar">
+    <a class="brand" href="{{ request.scope.root_path }}/">🧵 Filament Calibrator</a>
+    <span class="tag">OrcaSlicer · Bambu P1S</span>
+  </header>
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

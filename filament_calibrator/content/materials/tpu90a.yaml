@@ -1,0 +1,94 @@
+code: tpu90a
+name: TPU 90A
+defaults:
+  density: 1.21
+  diameter: 1.75
+  nozzle_range: [210, 240]
+  bed_range: [25, 60]
+  base_profile: "Generic TPU (o el de tu marca, si existe)"
+  bed_temp: 40
+  retraction_speed: 25
+
+steps:
+  - id: temperature
+    title: Torre de temperatura
+    orca_path: "Calibration → Temperature"
+    orca_apply: "Filament → Temperature → Nozzle temperature"
+    params: { start: 210, end: 240, step: 5 }
+    guidance: >
+      Imprime la torre de temperatura A BAJA VELOCIDAD. El TPU es flexible:
+      busca el bloque con buena adhesión entre capas y mínimo stringing. No te
+      fíes solo del aspecto; comprueba que las capas no se separan al doblar.
+    input: { kind: choice_value, label: "Temperatura del mejor bloque", unit: "°C" }
+    compute: identity
+    output: nozzle_temp
+    warnings:
+      - "Imprime TODO a baja velocidad (25–40 mm/s). A más velocidad el filamento flexible se dobla en el extrusor."
+      - "Seca el TPU antes de calibrar: absorbe humedad con facilidad."
+
+  - id: flow
+    title: "Flow ratio (YOLO recomendado)"
+    ask_current: true
+    orca_path: "Calibration → Flow rate → YOLO (recomendado)"
+    orca_apply: "Filament → Advanced → Flow ratio"
+    params: { base: 1.0 }
+    guidance: >
+      Imprime el test YOLO recomendado A BAJA VELOCIDAD (11 bloques, una pasada).
+      Por la baja velocidad los bloques pueden verse distintos a los de un
+      material rígido; elige igualmente el de superficie más lisa. Indica abajo el
+      flow ratio actual del perfil (Orca → Factor de flujo) y el modificador
+      (delta) del mejor bloque; el delta se SUMA al flow actual.
+    input: { kind: modifier, label: "Modificador (delta) del mejor bloque", unit: "" }
+    compute: flow_yolo
+    output: flow_ratio
+    warnings:
+      - "Velocidad baja al imprimir el test, o el resultado no será fiable."
+
+  - id: pressure_advance
+    title: "Pressure Advance (factor K) — método Tower"
+    optional: true
+    orca_path: "Calibration → Pressure Advance → Torre PA (DDE)"
+    orca_apply: "Filament → activar 'Pressure advance' y poner el valor (o usa ~0.03 si saltas el paso)"
+    params: { start: 0.0, step: 0.002 }
+    guidance: >
+      OPCIONAL en TPU. Por su elasticidad, variar el factor K suele no producir
+      diferencia visible. Puedes saltar este paso y usar un valor típico (~0.03).
+      Si aun así lo calibras: Torre PA, DDE. Mide con calibre la altura (mm) de la
+      zona con esquinas más limpias; la app calcula K = 0.002 × altura.
+    input: { kind: height_mm, label: "Altura de la mejor zona", unit: "mm" }
+    compute: pa_tower
+    output: pressure_advance
+    warnings:
+      - "En TPU la calibración de PA suele ser poco efectiva. Si no ves diferencia, usa ~0.03 y sigue."
+
+  - id: retraction
+    title: Test de retracción
+    orca_path: "Calibration → Retraction"
+    orca_apply: "Printer → Extruder → Retraction → Length (corta, 0.5–1.5 mm; baja también la velocidad de retracción)"
+    params: {}
+    guidance: >
+      CRÍTICO en TPU. Usa retracción CORTA (0.5–1.5 mm) y velocidad de retracción
+      BAJA (~25 mm/s). Una retracción mayor de 1.5 mm hace que el filamento
+      flexible se estire en vez de retraerse y se atasque. Elige la distancia más
+      corta que deje la torre razonablemente limpia.
+    input: { kind: value, label: "Distancia de retracción óptima", unit: "mm" }
+    compute: identity
+    output: retraction_distance
+    warnings:
+      - "No pases de ~1.5 mm: riesgo de buckling/atasco en el extrusor."
+
+  - id: mvs
+    title: Máxima velocidad volumétrica (MVS)
+    optional: true
+    orca_path: "Calibration → Max flowrate"
+    orca_apply: "Filament → Advanced → Max volumetric speed (muy bajo, ~2 mm³/s si saltas el paso)"
+    params: { start: 1, end: 3, step: 0.2 }
+    guidance: >
+      OPCIONAL y delicado en TPU. El caudal máximo es MUY bajo (1–2.5 mm³/s). El
+      propio test puede atascar la impresora. Si lo haces, usa un rango bajo
+      (inicio 1, fin 3, paso 0.2). Si prefieres, salta el paso y usa ~2 mm³/s.
+    input: { kind: height_mm, label: "Altura donde degrada la calidad", unit: "mm" }
+    compute: mvs
+    output: mvs
+    warnings:
+      - "El test de MVS puede atascar con TPU. Empieza muy bajo o sáltalo y usa un valor empírico (~2 mm³/s)."

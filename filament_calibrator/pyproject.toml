@@ -1,0 +1,38 @@
+[project]
+name = "filament-calibrator"
+version = "0.1.0"
+description = "Guía interactiva de calibración de filamentos en OrcaSlicer (Bambu Lab P1S)"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.110",
+    "uvicorn[standard]>=0.27",
+    "jinja2>=3.1",
+    "pyyaml>=6.0",
+    "httpx>=0.27",
+    "pydantic>=2.6",
+    "python-multipart>=0.0.9",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.6",
+]
+
+# La app no es una librería instalable: que uv no intente construir un paquete.
+[tool.uv]
+package = false
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = [
+    # starlette 1.3 avisa del TestClient sobre httpx; no afecta a producción.
+    "ignore:Using `httpx` with `starlette.testclient` is deprecated",
+]

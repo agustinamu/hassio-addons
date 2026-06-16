@@ -1,0 +1,23 @@
+name: Filament Calibrator
+version: "0.1.0"
+slug: filament_calibrator
+description: Guía de calibración de filamentos en OrcaSlicer (Bambu Lab P1S) con exporte a Spoolman
+url: https://github.com/agustinamu/hassio-addons
+# Imagen pre-construida en ghcr por el workflow builder. armv7 no se publica (la
+# matriz del builder solo hace aarch64/amd64), por eso no se declara aquí.
+image: "ghcr.io/agustinamu/{arch}-addon-filament_calibrator"
+arch:
+  - aarch64
+  - amd64
+# Sin s6-overlay: uvicorn corre como PID1 y gestiona SIGTERM.
+init: false
+# UI servida vía ingress (sin exponer puertos ni auth propia).
+ingress: true
+ingress_port: 8099
+panel_icon: mdi:printer-3d-nozzle
+panel_title: Calibrador
+# /data es persistente automáticamente: los filamentos sobreviven a reinicios/updates.
+options:
+  spoolman_url: ""
+schema:
+  spoolman_url: "str?"
