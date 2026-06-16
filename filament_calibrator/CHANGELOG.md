@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.1
+
+- Fix ingress: el CSS/JS estático daba 404 bajo el ingress de HA (página sin estilos).
+  La causa era fijar `scope["root_path"]` (clave reservada por Starlette para enrutar
+  Mount), que rompía `StaticFiles`. Ahora se usa una clave propia `ingress_path`.
+- Test de regresión: `/static` debe servirse con la cabecera `X-Ingress-Path`.
+
 ## 0.1.0
 
 - Versión inicial del addon: guía de calibración de filamentos en OrcaSlicer

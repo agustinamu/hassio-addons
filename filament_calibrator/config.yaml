@@ -1,5 +1,5 @@
 name: Filament Calibrator
-version: "0.1.0"
+version: "0.1.1"
 slug: filament_calibrator
 description: Guía de calibración de filamentos en OrcaSlicer (Bambu Lab P1S) con exporte a Spoolman
 url: https://github.com/agustinamu/hassio-addons

@@ -62,6 +62,14 @@ def test_ingress_prefixes_links(client):
     assert f'href="{INGRESS}/static/style.css"' in r.text
 
 
+def test_ingress_serves_static(client):
+    # Regresión: con la cabecera de ingress, /static debe SERVIRSE (no 404). El bug
+    # original fijaba scope["root_path"], que rompía el Mount de StaticFiles.
+    r = client.get("/static/style.css", headers={"X-Ingress-Path": INGRESS})
+    assert r.status_code == 200
+    assert "text/css" in r.headers["content-type"]
+
+
 def test_ingress_prefixes_redirect_location(client):
     r = client.post(
         "/filaments/test-smoke/finalize",  # no existe -> 404, no redirige

@@ -65,7 +65,7 @@
       <p class="apply">2. Introduce el valor abajo (lo calculo) y aplícalo en Orca:
         <code>{{ step.orca_apply }}</code>. Guarda el perfil antes del siguiente paso.</p>
 
-      <form method="post" action="{{ request.scope.root_path }}/filaments/{{ record.slug }}/steps/{{ step.id }}" class="step-form">
+      <form method="post" action="{{ request.scope.ingress_path }}/filaments/{{ record.slug }}/steps/{{ step.id }}" class="step-form">
         {% if step.ask_current %}
         <label>Flow ratio actual del perfil
           <input type="number" step="any" name="current" required
@@ -85,7 +85,7 @@
 
 <section class="card">
   <h2>Datos del filamento</h2>
-  <form method="post" action="{{ request.scope.root_path }}/filaments/{{ record.slug }}/meta" class="grid">
+  <form method="post" action="{{ request.scope.ingress_path }}/filaments/{{ record.slug }}/meta" class="grid">
     <label>Marca / fabricante
       <input name="vendor" value="{{ record.vendor }}">
     </label>
@@ -130,14 +130,14 @@
 </section>
 
 <section class="card actions">
-  <a href="{{ request.scope.root_path }}/" class="link">← Volver</a>
+  <a href="{{ request.scope.ingress_path }}/" class="link">← Volver</a>
   <div class="action-buttons">
     {% if spoolman_enabled %}
-    <form method="post" action="{{ request.scope.root_path }}/filaments/{{ record.slug }}/sync">
+    <form method="post" action="{{ request.scope.ingress_path }}/filaments/{{ record.slug }}/sync">
       <button type="submit">Enviar a Spoolman</button>
     </form>
     {% endif %}
-    <form method="post" action="{{ request.scope.root_path }}/filaments/{{ record.slug }}/finalize">
+    <form method="post" action="{{ request.scope.ingress_path }}/filaments/{{ record.slug }}/finalize">
       <button class="primary" type="submit">Marcar como calibrado</button>
     </form>
   </div>

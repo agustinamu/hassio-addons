@@ -12,7 +12,7 @@
       {% for r in records %}
       <tr>
         <td>
-          <a href="{{ request.scope.root_path }}/filaments/{{ r.slug }}">
+          <a href="{{ request.scope.ingress_path }}/filaments/{{ r.slug }}">
             {% if r.color_hex %}<span class="dot" style="background:#{{ r.color_hex }}"></span>{% endif %}
             <strong>{{ r.vendor }}</strong> · {{ r.name }}
           </a>
@@ -26,7 +26,7 @@
           {% endif %}
         </td>
         <td class="right">
-          <form method="post" action="{{ request.scope.root_path }}/filaments/{{ r.slug }}/delete"
+          <form method="post" action="{{ request.scope.ingress_path }}/filaments/{{ r.slug }}/delete"
                 onsubmit="return confirm('¿Borrar {{ r.vendor }} {{ r.name }}?')">
             <button class="link danger" type="submit">borrar</button>
           </form>
@@ -42,7 +42,7 @@
 
 <section class="card">
   <h2>Nuevo filamento</h2>
-  <form method="post" action="{{ request.scope.root_path }}/filaments" class="grid">
+  <form method="post" action="{{ request.scope.ingress_path }}/filaments" class="grid">
     <label>Marca / fabricante
       <input name="vendor" required placeholder="p.ej. Bambu, eSun">
     </label>

@@ -60,14 +60,18 @@ templates = Jinja2Templates(directory=BASE_DIR / "templates")
 
 
 @app.middleware("http")
-async def ingress_root_path(request: Request, call_next):
+async def ingress_prefix(request: Request, call_next):
     """Bajo el ingress de HA el addon se sirve tras un prefijo con token, que HA
-    envía en la cabecera X-Ingress-Path. Lo exponemos como root_path para que las
-    plantillas y los redirects lo antepongan. Sin la cabecera (dev local / Docker
-    directo) queda "" y todo resuelve en la raíz, igual que antes."""
-    prefix = request.headers.get("X-Ingress-Path")
-    if prefix:
-        request.scope["root_path"] = prefix
+    envía en la cabecera X-Ingress-Path. Lo guardamos en una clave PROPIA del scope
+    (`ingress_path`) que las plantillas y los redirects anteponen.
+
+    OJO: no usar `root_path` (clave reservada): Starlette la usa para enrutar los
+    Mount, y fijarla aquí —cuando HA ya ha quitado el prefijo del path— rompe el
+    servido de StaticFiles (404 en /static/* tras el ingress). Las rutas normales no
+    lo notan, pero los estáticos sí. Por eso usamos una clave aparte.
+
+    Sin la cabecera (dev local / Docker directo) queda "" y todo resuelve en la raíz."""
+    request.scope["ingress_path"] = request.headers.get("X-Ingress-Path", "")
     return await call_next(request)
 
 
@@ -87,8 +91,8 @@ def slugify(text: str) -> str:
 
 def _redirect(request: Request, url: str) -> RedirectResponse:
     # 303: tras un POST, el navegador hace GET de la ficha. Antepone el prefijo de
-    # ingress (root_path) para que el Location sea válido tras el proxy de HA.
-    prefix = request.scope.get("root_path", "")
+    # ingress para que el Location sea válido tras el proxy de HA.
+    prefix = request.scope.get("ingress_path", "")
     return RedirectResponse(f"{prefix}{url}", status_code=303)
 
 
