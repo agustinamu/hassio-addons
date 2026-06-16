@@ -12,8 +12,8 @@ arch:
 # Sin s6-overlay: uvicorn corre como PID1 y gestiona SIGTERM.
 init: false
 # UI servida vía ingress (sin exponer puertos ni auth propia).
+# ingress_port se omite: 8099 es el default del supervisor (run.sh sirve uvicorn ahí).
 ingress: true
-ingress_port: 8099
 panel_icon: mdi:printer-3d-nozzle
 panel_title: Calibrador
 # /data es persistente automáticamente: los filamentos sobreviven a reinicios/updates.
