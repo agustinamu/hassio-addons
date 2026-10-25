@@ -5,7 +5,8 @@ name: Builder
 # Basado en https://github.com/home-assistant/apps-example/blob/main/.github/workflows/builder.yaml
 
 env:
-  MONITORED_FILES: "config.yaml Dockerfile rootfs docker_entrypoint.sh run.sh"
+  # Prefijos (dentro de cada addon) que afectan a la imagen.
+  MONITORED_FILES: "config.yaml Dockerfile rootfs docker_entrypoint.sh run.sh app content pyproject.toml uv.lock"
 
 on:
   push:
@@ -27,7 +28,7 @@ jobs:
       changed_addons: ${{ steps.filter.outputs.changed_addons }}
     steps:
       - name: Check out the repository
-        uses: actions/checkout@v7.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
 
@@ -49,7 +50,7 @@ jobs:
 
       - name: Find add-on directories
         id: addons
-        uses: home-assistant/actions/helpers/find-addons@master
+        uses: home-assistant/actions/helpers/find-addons@cd6f3635a740c84d8a14f6121a90068b8ece6bf6 # master 2026-10-17
 
       - name: Filter changed add-ons
         id: filter
@@ -79,6 +80,39 @@ jobs:
             echo "changed=false" >> "$GITHUB_OUTPUT"
             echo "No add-on had any monitored files changed (${MONITORED_FILES})"
           fi
+
+      # skip-existing no republica una versión ya publicada: un cambio en la imagen
+      # sin subir `version` pasaría en verde sin publicarse. En PRs de Dependabot
+      # solo avisa (homebox-version sube la de Homebox con un commit que no relanza
+      # este workflow; el resto hay que subirla a mano en el PR).
+      - name: Check version bumps
+        if: github.event_name == 'pull_request'
+        env:
+          ADDONS: ${{ steps.addons.outputs.addons }}
+          CHANGED_FILES: ${{ steps.changed_files.outputs.all }}
+          BASE_REF: ${{ github.base_ref }}
+          ACTOR: ${{ github.actor }}
+        run: |
+          level=error; [[ "${ACTOR}" == "dependabot[bot]" ]] && level=warning
+          failed=0
+          for addon in ${ADDONS}; do
+            image_changed=false
+            for f in ${CHANGED_FILES}; do
+              [[ "${f}" == "${addon}/"* && "${f}" != "${addon}/config.yaml" ]] || continue
+              for m in ${MONITORED_FILES}; do
+                [[ "${f}" == "${addon}/${m}"* ]] && image_changed=true
+              done
+            done
+            "${image_changed}" || continue
+            old=$(git show "origin/${BASE_REF}:${addon}/config.yaml" 2>/dev/null | sed -nE 's/^version: "?([^"]*)"?$/\1/p')
+            new=$(sed -nE 's/^version: "?([^"]*)"?$/\1/p' "${addon}/config.yaml")
+            if [[ -n "${old}" && "${old}" == "${new}" ]]; then
+              echo "::${level} file=${addon}/config.yaml::${addon}: la imagen cambia pero version sigue en ${new}; súbela o no se publicará"
+              failed=1
+            fi
+          done
+          [[ "${level}" == "error" ]] && exit "${failed}"
+          exit 0
 
   build:
     name: Build ${{ matrix.addon }}

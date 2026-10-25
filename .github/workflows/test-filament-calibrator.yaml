@@ -1,0 +1,45 @@
+name: Test filament_calibrator
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "filament_calibrator/**"
+      - ".github/workflows/test-filament-calibrator.yaml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "filament_calibrator/**"
+      - ".github/workflows/test-filament-calibrator.yaml"
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: Ruff + pytest
+    defaults:
+      run:
+        working-directory: filament_calibrator
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      - name: Ruff
+        run: |
+          uv run --frozen ruff check .
+          uv run --frozen ruff format --check .
+
+      - name: Pytest
+        run: uv run --frozen pytest -q

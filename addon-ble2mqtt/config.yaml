@@ -2,6 +2,8 @@
 name: BLE2MQTT
 version: "0.1.7"
 slug: ble2mqtt
+# Obsoleto: para el Vson WP6003 usar la integración hass-vson (ver README).
+stage: deprecated
 description: >-
   Bridge Bluetooth Low Energy (BLE) devices to Home Assistant via MQTT.
   Based on https://github.com/devbis/ble2mqtt

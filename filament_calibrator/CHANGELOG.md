@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.2
+
+- Imagen base y uv fijados por etiqueta y digest (antes `uv:latest`), actualizados por Dependabot.
+- Build con las acciones nuevas de home-assistant/builder (sin `build.yaml`).
+- `ruff format` aplicado a `app/main.py`; tests y ruff en CI.
+
 ## 0.1.1
 
 - Fix ingress: el CSS/JS estático daba 404 bajo el ingress de HA (página sin estilos).
