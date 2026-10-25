@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.3
+
+- Dependencias actualizadas (`uv lock --upgrade`): fastapi 0.162, starlette 1.10, uvicorn 0.54,
+  pydantic 2.14, websockets 17; incluye los parches de seguridad de certifi y anyio.
+
 ## 0.1.2
 
 - Imagen base y uv fijados por etiqueta y digest (antes `uv:latest`), actualizados por Dependabot.

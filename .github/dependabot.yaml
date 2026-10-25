@@ -27,10 +27,20 @@ updates:
     groups:
       base-images:
         patterns: ["*"]
+    # Cambiar de Python (3.12 → 3.x) es una migración, no un bump rutinario:
+    # solo parches/digest. (3.15 rompió el build: sin wheels.)
+    ignore:
+      - dependency-name: "python"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
   - package-ecosystem: "uv"
     directory: "/filament_calibrator"
     schedule:
       interval: monthly
+    # Solo uv.lock: los rangos de pyproject.toml no se tocan.
+    versioning-strategy: lockfile-only
     groups:
       python:
+        patterns: ["*"]
+      python-security:
+        applies-to: security-updates
         patterns: ["*"]
