@@ -55,7 +55,7 @@ CALIBRATOR_SPOOLMAN_URL=http://<IP_HA>:7912 uv run uvicorn app.main:app --reload
 ## Addon de Home Assistant
 
 Empaquetado como addon en esta misma carpeta (`config.yaml`, `Dockerfile` con uv que
-reutiliza `pyproject.toml`/`uv.lock`, `build.yaml`, `run.sh`, `DOCS.md`). Sirve la UI por
+reutiliza `pyproject.toml`/`uv.lock`, `run.sh`, `DOCS.md`). Sirve la UI por
 **ingress** y persiste en `/data/filaments` (`CALIBRATOR_DATA_DIR=/data`). La opción
 `spoolman_url` del addon mapea a `CALIBRATOR_SPOOLMAN_URL`. Instalación y opciones en
 `DOCS.md`. Para probarlo en local: copiar la carpeta a `/addons/filament_calibrator/`.
