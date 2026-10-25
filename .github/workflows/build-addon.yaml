@@ -48,9 +48,13 @@ jobs:
           DESCRIPTION: ${{ steps.info.outputs.description }}
           URL: ${{ steps.info.outputs.url }}
         run: |
+          # El helper info devuelve los valores codificados en JSON ("..." o null).
+          for var in IMAGE VERSION NAME DESCRIPTION URL; do
+            printf -v "${var}" '%s' "$(jq -r '. // empty' <<< "${!var:-null}")"
+          done
           # config.yaml: image: "ghcr.io/<owner>/{arch}-addon-<slug>"
           name_part="${IMAGE##*/}"
-          if [[ -z "${IMAGE}" || "${IMAGE}" == "null" || "${name_part}" != "{arch}-"* ]]; then
+          if [[ -z "${IMAGE}" || "${name_part}" != "{arch}-"* ]]; then
             echo "::error::image debe ser <registro>/<owner>/{arch}-<nombre> (es '${IMAGE}')"
             exit 1
           fi
@@ -60,7 +64,7 @@ jobs:
             echo "version=${VERSION}"
             echo "name=${NAME}"
             echo "description=${DESCRIPTION}"
-            if [[ -n "${URL}" && "${URL}" != "null" ]]; then echo "url=${URL}"; fi
+            if [[ -n "${URL}" ]]; then echo "url=${URL}"; fi
           } >> "$GITHUB_OUTPUT"
 
       - name: Prepare build matrix
