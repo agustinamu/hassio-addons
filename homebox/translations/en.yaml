@@ -1,0 +1,18 @@
+---
+configuration:
+  hostname:
+    name: Public URL
+    description: >-
+      URL served by the reverse proxy (e.g. https://inventory.example.com).
+      Used to build QR code links. Empty = derived from the request.
+  allow_registration:
+    name: Allow registration
+    description: >-
+      Allow creating accounts from the login page. Disable once the users exist.
+  trust_proxy:
+    name: Trust proxy
+    description: >-
+      Trust X-Forwarded-* headers (client IP for login rate limiting, scheme).
+      Only safe if clients cannot reach port 7745 bypassing the proxy.
+network:
+  7745/tcp: Homebox web interface

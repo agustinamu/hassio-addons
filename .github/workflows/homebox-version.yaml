@@ -1,0 +1,52 @@
+name: Homebox version
+
+# La versión del addon debe seguir a la de Homebox (etiqueta del FROM), o la
+# imagen se publicaría con una etiqueta ya existente y HA no vería la
+# actualización. En PRs de Dependabot la sincroniza; en el resto, la verifica.
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "homebox/Dockerfile"
+      - "homebox/config.yaml"
+
+permissions:
+  contents: read
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    name: Sync/check add-on version
+    permissions:
+      contents: write
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Sync version (Dependabot)
+        if: github.actor == 'dependabot[bot]'
+        run: |
+          tag=$(sed -nE 's#^FROM ghcr\.io/sysadminsmedia/homebox:([0-9.]+)@.*#\1#p' homebox/Dockerfile)
+          version=$(sed -nE 's/^version: "(.*)"$/\1/p' homebox/config.yaml)
+          [ -n "$tag" ] || { echo "::error::No se encuentra la etiqueta en el FROM"; exit 1; }
+          [ "$tag" = "$version" ] && exit 0
+          sed -i -E "s/^version: \".*\"$/version: \"$tag\"/" homebox/config.yaml
+          sed -i "0,/^## /s//## $tag\n\n- Homebox $tag: https:\/\/github.com\/sysadminsmedia\/homebox\/releases\/tag\/v$tag\n\n## /" homebox/CHANGELOG.md
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "homebox: versión del addon $tag"
+          git push
+
+      - name: Check version
+        run: |
+          tag=$(sed -nE 's#^FROM ghcr\.io/sysadminsmedia/homebox:([0-9.]+)@.*#\1#p' homebox/Dockerfile)
+          version=$(sed -nE 's/^version: "(.*)"$/\1/p' homebox/config.yaml)
+          # Igual a la etiqueta, o etiqueta.N para cambios solo del addon.
+          case "$version" in
+            "$tag" | "$tag".[0-9]*) echo "OK: addon $version, Homebox $tag" ;;
+            *) echo "::error file=homebox/config.yaml::version \"$version\" no corresponde a Homebox $tag"; exit 1 ;;
+          esac

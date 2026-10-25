@@ -5,3 +5,10 @@ updates:
     schedule:
       interval: weekly
       time: "06:00"
+  # Imagen base de Homebox (FROM con etiqueta y digest). La versión del addon la
+  # sube .github/workflows/homebox-version.yaml en el propio PR.
+  - package-ecosystem: "docker"
+    directory: "/homebox"
+    schedule:
+      interval: weekly
+      time: "06:00"

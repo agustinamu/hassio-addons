@@ -24,6 +24,11 @@ This repository contains the following add-ons
 ![Supports aarch64 Architecture][aarch64-shield]
 ![Supports amd64 Architecture][amd64-shield]
 
+&#10003;  [homebox](homebox/) : Home inventory (storage room › shelves › boxes) with photos and QR labels. Based on https://github.com/sysadminsmedia/homebox
+
+![Supports aarch64 Architecture][aarch64-shield]
+![Supports amd64 Architecture][amd64-shield]
+
 
 <!--
 

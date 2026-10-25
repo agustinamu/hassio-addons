@@ -1,0 +1,33 @@
+---
+name: Homebox
+version: "0.27.1"
+slug: homebox
+description: Inventario doméstico (trastero, estanterías, cajas) con fotos y QR
+url: https://github.com/agustinamu/hassio-addons/tree/main/homebox
+# Imagen pre-construida en ghcr por el workflow builder.
+image: "ghcr.io/agustinamu/{arch}-addon-homebox"
+arch:
+  - aarch64
+  - amd64
+# Sin s6-overlay: run.sh hace exec del binario, que queda como PID1.
+init: false
+# Sin ingress: los QR se abren con la cámara del móvil, fuera de la app de HA.
+# Se publica por el puerto y se accede a través del proxy inverso con TLS.
+ports:
+  7745/tcp: 7745
+ports_description:
+  7745/tcp: Interfaz web de Homebox
+webui: "http://[HOST]:[PORT:7745]"
+# Salud: HEALTHCHECK heredado de la imagen oficial (/api/v1/status); `watchdog` está obsoleto.
+# SQLite en modo WAL: copiar los ficheros en caliente puede dar una copia
+# inconsistente. En frío el addon se para unos segundos durante el backup.
+backup: cold
+# /data es persistente: base de datos, fotos y secreto (entra en los backups de HA).
+# hostname es opcional: no va en options (un "" no valida como url).
+options:
+  allow_registration: true
+  trust_proxy: true
+schema:
+  hostname: "url?"
+  allow_registration: bool
+  trust_proxy: bool

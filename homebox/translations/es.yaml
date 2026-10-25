@@ -1,0 +1,20 @@
+---
+configuration:
+  hostname:
+    name: URL pública
+    description: >-
+      URL que sirve el proxy inverso (p. ej. https://inventario.midominio.com).
+      Se usa en los enlaces de los QR. Vacío = se deduce de la petición.
+  allow_registration:
+    name: Permitir registro
+    description: >-
+      Permite crear cuentas desde la pantalla de login. Desactivar cuando
+      existan los usuarios.
+  trust_proxy:
+    name: Confiar en el proxy
+    description: >-
+      Usa las cabeceras X-Forwarded-* (IP del cliente para el límite de
+      intentos de login, esquema). Solo es seguro si nadie llega al puerto
+      7745 saltándose el proxy.
+network:
+  7745/tcp: Interfaz web de Homebox
