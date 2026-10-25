@@ -14,11 +14,6 @@ If you want to do add the repository manually, please follow the procedure highl
 
 This repository contains the following add-ons
 
-&#10003;  [addon-ble2mqtt](addon-ble2mqtt/) : **Deprecated** (use [hass-vson](https://github.com/eigger/hass-vson)). Control your Bluetooth devices with smart home. Addon of repo https://github.com/devbis/ble2mqtt
-
-![Supports aarch64 Architecture][aarch64-shield]
-![Supports amd64 Architecture][amd64-shield]
-
 &#10003;  [filament_calibrator](filament_calibrator/) : Guided filament calibration for OrcaSlicer (Bambu Lab P1S) with Spoolman export. Served via ingress.
 
 ![Supports aarch64 Architecture][aarch64-shield]
