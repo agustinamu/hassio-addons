@@ -4,19 +4,19 @@ version = "0.1.0"
 description = "Guía interactiva de calibración de filamentos en OrcaSlicer (Bambu Lab P1S)"
 requires-python = ">=3.12"
 dependencies = [
-    "fastapi>=0.110",
-    "uvicorn[standard]>=0.27",
+    "fastapi>=0.159.1",
+    "uvicorn[standard]>=0.54.0",
     "jinja2>=3.1",
     "pyyaml>=6.0",
     "httpx>=0.27",
-    "pydantic>=2.6",
+    "pydantic>=2.14.1",
     "python-multipart>=0.0.9",
 ]
 
 [dependency-groups]
 dev = [
-    "pytest>=8.0",
-    "ruff>=0.6",
+    "pytest>=9.1.1",
+    "ruff>=0.17.1",
 ]
 
 # La app no es una librería instalable: que uv no intente construir un paquete.
