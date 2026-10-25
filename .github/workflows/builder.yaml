@@ -1,8 +1,11 @@
 name: Builder
 
+# Acciones componibles de home-assistant/builder (la acción home-assistant/builder
+# está retirada: sus versiones > 2026.02.1 piden una imagen de builder que no existe).
+# Basado en https://github.com/home-assistant/apps-example/blob/main/.github/workflows/builder.yaml
+
 env:
-  BUILD_ARGS: "--test"
-  MONITORED_FILES: "build.yaml config.yaml Dockerfile rootfs docker_entrypoint.sh run.sh"
+  MONITORED_FILES: "config.yaml Dockerfile rootfs docker_entrypoint.sh run.sh"
 
 on:
   push:
@@ -12,29 +15,34 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+
 jobs:
   init:
     runs-on: ubuntu-latest
     name: Initialize builds
     outputs:
-      changed_addons: ${{ steps.changed_addons.outputs.addons }}
-      changed: ${{ steps.changed_addons.outputs.changed }}
+      changed: ${{ steps.filter.outputs.changed }}
+      changed_addons: ${{ steps.filter.outputs.changed_addons }}
     steps:
       - name: Check out the repository
         uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 0
 
+      # git diff propio en lugar de tj-actions/changed-files (comprometida en 2025).
       - name: Get changed files
         id: changed_files
         run: |
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            changed=$(git diff --name-only "origin/$BASE_REF"...HEAD | tr '\n' ' ')
+          if [[ "${EVENT}" == "pull_request" ]]; then
+            changed=$(git diff --name-only "origin/${BASE_REF}...HEAD" | tr '\n' ' ')
           else
-            changed=$(git diff --name-only "$BEFORE_SHA" "$AFTER_SHA" | tr '\n' ' ')
+            changed=$(git diff --name-only "${BEFORE_SHA}" "${AFTER_SHA}" | tr '\n' ' ')
           fi
-          echo "all=$changed" >> $GITHUB_OUTPUT
+          echo "all=${changed}" >> "$GITHUB_OUTPUT"
         env:
+          EVENT: ${{ github.event_name }}
           BASE_REF: ${{ github.base_ref }}
           BEFORE_SHA: ${{ github.event.before }}
           AFTER_SHA: ${{ github.sha }}
@@ -43,87 +51,48 @@ jobs:
         id: addons
         uses: home-assistant/actions/helpers/find-addons@master
 
-      - name: Get changed add-ons
-        id: changed_addons
+      - name: Filter changed add-ons
+        id: filter
+        env:
+          ADDONS: ${{ steps.addons.outputs.addons }}
+          CHANGED_FILES: ${{ steps.changed_files.outputs.all }}
         run: |
-          declare -a changed_addons
-          for addon in ${{ steps.addons.outputs.addons }}; do
-            if [[ "${{ steps.changed_files.outputs.all }}" =~ $addon ]]; then
-              for file in ${{ env.MONITORED_FILES }}; do
-                  if [[ "${{ steps.changed_files.outputs.all }}" =~ $addon/$file ]]; then
-                    if [[ ! "${changed_addons[@]}" =~ $addon ]]; then
-                      changed_addons+=("\"${addon}\",");
-                    fi
-                  fi
-              done
-            fi
-          done
-
-          changed=$(echo ${changed_addons[@]} | rev | cut -c 2- | rev)
-
-          if [[ -n ${changed} ]]; then
-            echo "Changed add-ons: $changed";
-            echo "changed=true" >> $GITHUB_OUTPUT;
-            echo "addons=[$changed]" >> $GITHUB_OUTPUT;
+          changed_addons=()
+          # Si cambia el propio workflow se construyen todos (skip-existing evita
+          # republicar versiones ya publicadas).
+          if [[ "${CHANGED_FILES}" =~ \.github/workflows/(builder|build-addon)\.yaml ]]; then
+            read -ra changed_addons <<< "${ADDONS}"
           else
-            echo "No add-on had any monitored files changed (${{ env.MONITORED_FILES }})";
+            for addon in ${ADDONS}; do
+              for file in ${MONITORED_FILES}; do
+                if [[ "${CHANGED_FILES}" =~ ${addon}/${file} ]]; then
+                  changed_addons+=("${addon}")
+                  break
+                fi
+              done
+            done
           fi
+          if [[ ${#changed_addons[@]} -gt 0 ]]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "changed_addons=$(jq -nc '$ARGS.positional' --args "${changed_addons[@]}")" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No add-on had any monitored files changed (${MONITORED_FILES})"
+          fi
+
   build:
+    name: Build ${{ matrix.addon }}
     needs: init
-    runs-on: ubuntu-latest
     if: needs.init.outputs.changed == 'true'
-    name: Build ${{ matrix.arch }} ${{ matrix.addon }} add-on
     permissions:
       contents: read
+      id-token: write
       packages: write
     strategy:
+      fail-fast: false
       matrix:
-        addon: ${{ fromJson(needs.init.outputs.changed_addons) }}
-        arch: ["aarch64", "amd64"]
-
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v7.0.1
-
-      - name: Get information
-        id: info
-        uses: home-assistant/actions/helpers/info@master
-        with:
-          path: "./${{ matrix.addon }}"
-
-      - name: Check if add-on should be built
-        id: check
-        run: |
-          if [[ "${{ steps.info.outputs.image }}" == "null" ]]; then
-            echo "Image property is not defined, skipping build"
-            echo "build_arch=false" >> $GITHUB_OUTPUT;
-          elif [[ "${{ steps.info.outputs.architectures }}" =~ ${{ matrix.arch }} ]]; then
-             echo "build_arch=true" >> $GITHUB_OUTPUT;
-             echo "image=$(echo ${{ steps.info.outputs.image }} | cut -d'/' -f3)" >> $GITHUB_OUTPUT;
-             if [[ -z "${{ github.head_ref }}" ]] && [[ "${{ github.event_name }}" == "push" ]]; then
-                 echo "BUILD_ARGS=" >> $GITHUB_ENV;
-             fi
-           else
-             echo "${{ matrix.arch }} is not a valid arch for ${{ matrix.addon }}, skipping build";
-             echo "build_arch=false" >> $GITHUB_OUTPUT;
-          fi
-
-      - name: Login to GitHub Container Registry
-        if: env.BUILD_ARGS != '--test'
-        uses: docker/login-action@v4.6.0
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build ${{ matrix.addon }} add-on
-        if: steps.check.outputs.build_arch == 'true'
-        uses: home-assistant/builder@2026.09.0
-        with:
-          args: |
-            ${{ env.BUILD_ARGS }} \
-            --${{ matrix.arch }} \
-            --target /data/${{ matrix.addon }} \
-            --image "${{ steps.check.outputs.image }}" \
-            --docker-hub "ghcr.io/${{ github.repository_owner }}" \
-            --addon
+        addon: ${{ fromJSON(needs.init.outputs.changed_addons) }}
+    uses: ./.github/workflows/build-addon.yaml
+    with:
+      addon: ${{ matrix.addon }}
+      publish: ${{ github.event_name == 'push' }}

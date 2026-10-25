@@ -13,7 +13,7 @@ No sustituye a OrcaSlicer: Orca sigue siendo la fuente de verdad del perfil. La 
 ### Como addon local (para probar)
 
 1. Copia la carpeta del calibrador a `/addons/filament_calibrator/` de tu Home Assistant
-   (vía Samba/SSH/File editor). Debe contener `config.yaml`, `Dockerfile`, `build.yaml`,
+   (vía Samba/SSH/File editor). Debe contener `config.yaml`, `Dockerfile`,
    `run.sh`, `app/`, `content/`, `pyproject.toml` y `uv.lock`.
 2. **Ajustes → Add-ons → Add-on Store → ⋮ → Check for updates**. Aparece en
    *Local add-ons*.

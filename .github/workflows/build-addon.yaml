@@ -1,0 +1,113 @@
+name: Build add-on
+
+# Basado en https://github.com/home-assistant/apps-example/blob/main/.github/workflows/build-app.yaml
+# Diferencias: se conserva el nombre de imagen por arquitectura de config.yaml
+# (ghcr.io/<owner>/{arch}-addon-<slug>), así que no se publica manifiesto multi-arch;
+# y skip-existing no sobrescribe una versión ya publicada.
+
+on:
+  workflow_call:
+    inputs:
+      addon:
+        required: true
+        type: string
+      publish:
+        required: true
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  prepare:
+    name: Prepare
+    runs-on: ubuntu-latest
+    outputs:
+      build_matrix: ${{ steps.matrix.outputs.matrix }}
+      name: ${{ steps.normalize.outputs.name }}
+      description: ${{ steps.normalize.outputs.description }}
+      url: ${{ steps.normalize.outputs.url }}
+      version: ${{ steps.normalize.outputs.version }}
+      image_name: ${{ steps.normalize.outputs.image_name }}
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v7.0.1
+
+      - name: Get add-on information
+        id: info
+        uses: home-assistant/actions/helpers/info@master
+        with:
+          path: "./${{ inputs.addon }}"
+
+      - name: Normalize add-on information
+        id: normalize
+        env:
+          IMAGE: ${{ steps.info.outputs.image }}
+          VERSION: ${{ steps.info.outputs.version }}
+          NAME: ${{ steps.info.outputs.name }}
+          DESCRIPTION: ${{ steps.info.outputs.description }}
+          URL: ${{ steps.info.outputs.url }}
+        run: |
+          # El helper info devuelve los valores codificados en JSON ("..." o null).
+          for var in IMAGE VERSION NAME DESCRIPTION URL; do
+            printf -v "${var}" '%s' "$(jq -r '. // empty' <<< "${!var:-null}")"
+          done
+          # config.yaml: image: "ghcr.io/<owner>/{arch}-addon-<slug>"
+          name_part="${IMAGE##*/}"
+          if [[ -z "${IMAGE}" || "${name_part}" != "{arch}-"* ]]; then
+            echo "::error::image debe ser <registro>/<owner>/{arch}-<nombre> (es '${IMAGE}')"
+            exit 1
+          fi
+          {
+            echo "image_name=${name_part#\{arch\}-}"
+            echo "registry_prefix=${IMAGE%/*}"
+            echo "version=${VERSION}"
+            echo "name=${NAME}"
+            echo "description=${DESCRIPTION}"
+            if [[ -n "${URL}" ]]; then echo "url=${URL}"; fi
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Prepare build matrix
+        id: matrix
+        uses: home-assistant/builder/actions/prepare-multi-arch-matrix@2026.09.0
+        with:
+          architectures: ${{ steps.info.outputs.architectures }}
+          image-name: ${{ steps.normalize.outputs.image_name }}
+          registry-prefix: ${{ steps.normalize.outputs.registry_prefix }}
+
+  build:
+    name: Build ${{ matrix.arch }} image
+    needs: prepare
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+      id-token: write
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.prepare.outputs.build_matrix) }}
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Build image
+        uses: home-assistant/builder/actions/build-image@2026.09.0
+        with:
+          arch: ${{ matrix.arch }}
+          container-registry-password: ${{ secrets.GITHUB_TOKEN }}
+          context: "./${{ inputs.addon }}"
+          image: ${{ matrix.image }}
+          image-tags: |
+            ${{ needs.prepare.outputs.version }}
+            latest
+          cache-gha-scope: ${{ inputs.addon }}-${{ matrix.arch }}
+          labels: |
+            io.hass.type=app
+            io.hass.name=${{ needs.prepare.outputs.name }}
+            io.hass.description=${{ needs.prepare.outputs.description }}
+            ${{ needs.prepare.outputs.url && format('io.hass.url={0}', needs.prepare.outputs.url) || '' }}
+          push: ${{ inputs.publish }}
+          skip-existing: ${{ inputs.publish && needs.prepare.outputs.version || '' }}
+          version: ${{ needs.prepare.outputs.version }}
