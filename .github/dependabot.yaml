@@ -1,10 +1,15 @@
 version: 2
 updates:
+  # Acciones fijadas por SHA (con la versión en comentario): un PR semanal agrupado.
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: weekly
       time: "06:00"
+    groups:
+      github-actions:
+        patterns: ["*"]
+
   # Imagen base de Homebox (FROM con etiqueta y digest). La versión del addon la
   # sube .github/workflows/homebox-version.yaml en el propio PR.
   - package-ecosystem: "docker"
@@ -12,3 +17,20 @@ updates:
     schedule:
       interval: weekly
       time: "06:00"
+
+  # Calibrador: imágenes base (python, uv) y dependencias Python (uv.lock).
+  # Estos PR necesitan subir `version` a mano (lo avisa el Builder).
+  - package-ecosystem: "docker"
+    directory: "/filament_calibrator"
+    schedule:
+      interval: monthly
+    groups:
+      base-images:
+        patterns: ["*"]
+  - package-ecosystem: "uv"
+    directory: "/filament_calibrator"
+    schedule:
+      interval: monthly
+    groups:
+      python:
+        patterns: ["*"]

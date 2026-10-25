@@ -29,6 +29,7 @@ BASE_DIR = Path(__file__).resolve().parent
 # por defecto. El storage se expone vía dependencia para poder sustituirlo en tests.
 MATERIALS: dict[str, Material] = load_materials()
 
+
 # Data dir configurable: el addon de HA monta /data persistente y pasa
 # CALIBRATOR_DATA_DIR=/data. Sin la env, dev local usa el path por defecto.
 def _resolve_storage() -> StorageBackend:
