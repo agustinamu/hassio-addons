@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.4
+
+- Imagen: Python 3.12.16 (slim-bookworm) y uv 0.13.6.
+- `uv lock --upgrade`: solo cambian dependencias de desarrollo (pytest 9.2, ruff 0.17.3).
+
 ## 0.1.3
 
 - Dependencias actualizadas (`uv lock --upgrade`): fastapi 0.162, starlette 1.10, uvicorn 0.54,
