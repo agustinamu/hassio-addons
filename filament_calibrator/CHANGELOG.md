@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.5
+
+- Imagen: uv 0.13.7; Python 3.12.16 (slim-bookworm) reconstruida (nuevo digest).
+- `uv lock --upgrade`: pydantic 2.14.3, python-multipart 0.0.33, anyio 4.16, websockets 17.4 y menores;
+  ruff 0.17.4 (desarrollo).
+
 ## 0.1.4
 
 - Imagen: Python 3.12.16 (slim-bookworm) y uv 0.13.6.
